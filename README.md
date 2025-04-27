@@ -1,24 +1,38 @@
-# 📄 **Currency API Documentation**
+# 💱 Exchange Currency API
 
-## Base URL
-
-```
-http://localhost:8080/api/currency
-```
+A Spring Boot REST API for currency exchange and conversion operations.  
+Real-time data is fetched from Fixer.io API.
 
 ---
 
-# 🚀 Endpoints
+## 🛠 Technologies
+
+- Java 17
+- Spring Boot 3
+- H2 Database
+- OpenAPI 3 (Swagger UI)
+- Docker
+- Apache Commons CSV
+- Maven
+- Lombok
 
 ---
 
-## 1. `POST /exchange-rate`
+## 🚀 API Endpoints
 
-**Description**:  
-Retrieve the current exchange rate between two currencies.
+| Method | Endpoint | Description |
+|:---|:---|:---|
+| POST | `/api/currency/exchange-rate` | Get real-time exchange rate |
+| POST | `/api/currency/convert` | Convert currency amount |
+| GET  | `/api/currency/conversion-history` | View conversion history |
+| POST | `/api/currency/bulk-upload` | Bulk currency conversion (JSON) |
+| POST | `/api/currency/bulk-upload-csv` | Bulk conversion via CSV upload |
 
-### Request Body:
+---
 
+## 📦 Example Requests
+
+### `/api/currency/exchange-rate`
 ```json
 {
   "sourceCurrency": "EUR",
@@ -26,179 +40,78 @@ Retrieve the current exchange rate between two currencies.
 }
 ```
 
-### Response:
-
-```json
-{
-  "sourceCurrency": "EUR",
-  "targetCurrency": "TRY",
-  "rate": 34.567
-}
-```
-
-### Possible Status Codes:
-- `200 OK` – Successful retrieval
-- `400 Bad Request` – Validation error
-- `500 Internal Server Error` – Server failure
-
----
-
-## 2. `POST /convert`
-
-**Description**:  
-Convert a specified amount from a source currency to a target currency.
-
-### Request Body:
-
+### `/api/currency/convert`
 ```json
 {
   "amount": 100,
   "sourceCurrency": "EUR",
-  "targetCurrency": "JPY"
+  "targetCurrency": "TRY"
 }
 ```
 
-### Response:
-
-```json
-{
-  "transactionId": "b1234cd56ef",
-  "convertedAmount": 15900.00
-}
-```
-
-### Possible Status Codes:
-- `200 OK` – Successful conversion
-- `400 Bad Request` – Invalid request payload
-- `500 Internal Server Error` – Conversion error
-
----
-
-## 3. `GET /conversion-history`
-
-**Description**:  
-Retrieve historical conversion transactions, filtered optionally by:
-- `transactionId`
-- `date` (format: `yyyy-MM-dd`)
-
-### Query Parameters:
-| Parameter       | Type        | Required | Example          | Description                            |
-|:----------------|:------------|:---------|:-----------------|:---------------------------------------|
-| transactionId   | String      | Optional | b1234cd56ef       | Filter by transaction ID              |
-| date            | LocalDate   | Optional | 2025-04-27        | Filter by conversion date (yyyy-MM-dd) |
-| page            | Integer     | Optional | 0                 | Page number (default: 0)               |
-| size            | Integer     | Optional | 10                | Page size (default: 10)                |
-
-### Response (paged):
-
-```json
-{
-  "content": [
-    {
-      "transactionId": "b1234cd56ef",
-      "convertedAmount": 15900.00
-    }
-  ],
-  "pageable": {...},
-  "totalPages": 1,
-  "totalElements": 1,
-  ...
-}
-```
-
----
-
-## 4. `POST /bulk-upload`
-
-**Description**:  
-Perform multiple currency conversions by sending a batch of conversion requests.
-
-### Request Body:
-
+### `/api/currency/bulk-upload`
 ```json
 {
   "conversions": [
     {
       "amount": 100,
       "sourceCurrency": "EUR",
-      "targetCurrency": "TRY"
-    },
-    {
-      "amount": 50,
-      "sourceCurrency": "EUR",
       "targetCurrency": "JPY"
-    }
-  ]
-}
-```
-
-### Response:
-
-```json
-{
-  "conversions": [
-    {
-      "transactionId": "trx001",
-      "convertedAmount": 3450.00
     },
     {
-      "transactionId": "trx002",
-      "convertedAmount": 7950.00
+      "amount": 200,
+      "sourceCurrency": "EUR",
+      "targetCurrency": "TRY"
     }
   ]
 }
 ```
 
-### Notes:
-- The server processes **each item one by one**.
-- Only `sourceCurrency = EUR` is allowed for now (due to API restrictions).
-
----
-
-## 5. `POST /bulk-upload-csv`
-
-**Description**:  
-Upload a **CSV file** containing multiple conversion requests.
-
-### CSV Format:
-| amount | sourceCurrency | targetCurrency |
-|:------:|:--------------:|:--------------:|
-| 100    | EUR            | TRY            |
-| 200    | EUR            | USD            |
-
-- **Headers must exist** exactly like: `amount`, `sourceCurrency`, `targetCurrency`.
-- **Only `EUR` source currency** is supported currently.
-
-### Response:
-
-Same as `/bulk-upload`, returns a list of transactions:
-
-```json
-{
-  "conversions": [
-    {
-      "transactionId": "trx003",
-      "convertedAmount": 5000.00
-    }
-  ]
-}
+### `/api/currency/bulk-upload-csv`
+CSV Format:
+```
+amount,sourceCurrency,targetCurrency
+100,EUR,JPY
+200,EUR,TRY
 ```
 
 ---
 
-# 📦 Error Responses (Common)
+## 📝 Notes
 
-| Status Code | Message Example                           | Cause                         |
-|:-----------:|:-----------------------------------------|:------------------------------|
-| 400         | "Validation failed"                      | Missing required fields       |
-| 401         | "Invalid API key"                         | Wrong external API key         |
-| 500         | "Internal server error" / "Invalid API response" | External API or server failure |
+- Only **EUR** is allowed as the base currency with free Fixer.io API.
+- All dates must follow `yyyy-MM-dd` format (e.g., `2025-04-27`).
+- Error handling and validations are implemented.
 
 ---
 
-# Important Notes
-- Dates must be provided in **`yyyy-MM-dd`** format.
-- If using CSV upload, **only valid files** (UTF-8 encoded) are accepted.
-- **Thread.sleep(1500)** is added intentionally for slow bulk simulation.
-- Exchange rates are **fetched live** from **Fixer.io** (limited to EUR-based conversions on free plan).
-Just say: `Prepare Swagger block`.
+## 📄 Swagger UI
+
+Access Swagger UI at:
+
+> [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
+
+---
+
+## 🐳 Docker Support
+
+### Build and Run with Docker:
+
+```bash
+docker build -t exchange-currency-api .
+docker run -p 8080:8080 exchange-currency-api
+```
+
+---
+
+## 🧪 Testing
+
+- JUnit 5 + Mockito tests.
+- Coverage includes: exchange rate, conversion, and bulk upload.
+
+---
+
+## ✨ Author
+
+- Berke Bayrakçı
+- GitHub: [berkebayrakci](https://github.com/berkebayrakci)
