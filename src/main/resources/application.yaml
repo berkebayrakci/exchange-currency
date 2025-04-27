@@ -1,6 +1,6 @@
 external-api:
   base-url: http://data.fixer.io/api/latest
-  api-key: 72c3174480f79a76cfee7793b7544448
+  api-key: 72c3174480f79a76cfee7793b7544448  // I did not put this into .env file intentionally. It has limited power, only for fetching exchange currency rates.
 
 springdoc:
   api-docs:
